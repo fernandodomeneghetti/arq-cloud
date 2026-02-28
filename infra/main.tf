@@ -9,7 +9,7 @@ terraform {
 
   backend "azurerm" {
     resource_group_name  = "rg-terraform-state"
-    storage_account_name = "unianchieta-arq-cloud" # Nome único
+    storage_account_name = "tfunianchieta001" # Nome único
     container_name       = "tfstate"
     key                  = "terraform.tfstate"
   }
