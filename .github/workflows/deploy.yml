@@ -31,6 +31,23 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Criar backend do Terraform (se não existir)
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az group create --name rg-terraform-state --location eastus --output none || true
+            az storage account create \
+              --name unianchieta-arq-cloud \
+              --resource-group rg-terraform-state \
+              --location eastus \
+              --sku Standard_LRS \
+              --output none || true
+            az storage container create \
+              --name tfstate \
+              --account-name unianchieta-arq-cloud \
+              --output none || true
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
