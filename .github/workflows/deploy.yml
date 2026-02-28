@@ -110,4 +110,4 @@ jobs:
         with:
           app-name: 'webapp-unianchieta-arq-cloud' # Nome definido no seu Terraform
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: './html'
+          package: './src'
