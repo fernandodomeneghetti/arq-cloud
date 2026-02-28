@@ -41,7 +41,7 @@ jobs:
             # Resource Group
             if ! az group show --name rg-terraform-state &>/dev/null; then
               echo "Criando resource group..."
-              az group create --name rg-terraform-state --location eastus
+              az group create --name rg-terraform-state --location brazilsouth
             else
               echo "Resource group já existe."
             fi
@@ -52,7 +52,7 @@ jobs:
               az storage account create \
                 --name tfunianchieta001 \
                 --resource-group rg-terraform-state \
-                --location eastus \
+                --location brazilsouth \
                 --sku Standard_LRS \
                 --allow-blob-public-access false
             else
