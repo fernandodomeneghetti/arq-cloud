@@ -1,0 +1,64 @@
+name: "Terraform + Infracost + Deploy"
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  iac-and-deploy:
+    runs-on: ubuntu-latest
+    
+    env:
+      # Credenciais para o Terraform falar com a Azure
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      # INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+
+    steps:
+      - name: Checkout Código
+        uses: actions/checkout@v3
+
+      # --- ETAPA 1: TERRAFORM ---
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      # --- ETAPA 2: INFRACOST (ANÁLISE DE CUSTO) ---
+      # - name: Setup Infracost
+      #   uses: infracost/actions/setup@v2
+      #   with:
+      #     api-key: ${{ env.INFRACOST_API_KEY }}
+
+      # - name: Gerar estimativa de custo
+      #   run: |
+      #     infracost breakdown --path . \
+      #                       --format json \
+      #                       --out-file /tmp/infracost.json
+          
+      #     # Mostra o custo no log do GitHub Actions
+      #     infracost output --path /tmp/infracost.json --format table
+
+      # --- ETAPA 3: APLICAÇÃO DA INFRAESTRUTURA ---
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve tfplan
+
+      # --- ETAPA 4: DEPLOY DO SITE ---
+      - name: 'Deploy Web App'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'webapp-estudante-digital-001' # Nome definido no seu Terraform
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: './html'
