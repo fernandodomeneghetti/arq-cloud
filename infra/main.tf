@@ -22,7 +22,7 @@ provider "azurerm" {
 # 2. Grupo de Recursos - O "container" lógico
 resource "azurerm_resource_group" "aula_rg" {
   name     = "rg-aula-terraform-cd"
-  location = "Brazil South"
+  location = "Canada Central"
 }
 
 # 3. Plano de Serviço (F1 é a camada gratuita/Free)
