@@ -36,17 +36,41 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            az group create --name rg-terraform-state --location eastus --output none || true
-            az storage account create \
-              --name tfunianchieta001 \
+            set -e
+
+            # Resource Group
+            if ! az group show --name rg-terraform-state &>/dev/null; then
+              echo "Criando resource group..."
+              az group create --name rg-terraform-state --location eastus
+            else
+              echo "Resource group já existe."
+            fi
+
+            # Storage Account
+            if ! az storage account show --name tfunianchieta001 --resource-group rg-terraform-state &>/dev/null; then
+              echo "Criando storage account..."
+              az storage account create \
+                --name tfunianchieta001 \
+                --resource-group rg-terraform-state \
+                --location eastus \
+                --sku Standard_LRS \
+                --allow-blob-public-access false
+            else
+              echo "Storage account já existe."
+            fi
+
+            # Container
+            ACCOUNT_KEY=$(az storage account keys list \
               --resource-group rg-terraform-state \
-              --location eastus \
-              --sku Standard_LRS \
-              --output none || true
-            az storage container create \
-              --name tfstate \
               --account-name tfunianchieta001 \
-              --output none || true
+              --query '[0].value' -o tsv)
+
+            if ! az storage container show --name tfstate --account-name tfunianchieta001 --account-key "$ACCOUNT_KEY" &>/dev/null; then
+              echo "Criando container..."
+              az storage container create --name tfstate --account-name tfunianchieta001 --account-key "$ACCOUNT_KEY"
+            else
+              echo "Container já existe."
+            fi
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
