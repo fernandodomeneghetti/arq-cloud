@@ -31,9 +31,11 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+        working-directory: ./infra
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
+        working-directory: ./infra
 
       # --- ETAPA 2: INFRACOST (ANÁLISE DE CUSTO) ---
       # - name: Setup Infracost
@@ -54,6 +56,7 @@ jobs:
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve tfplan
+        working-directory: ./infra
 
       # --- ETAPA 4: DEPLOY DO SITE ---
       - name: 'Deploy Web App'
